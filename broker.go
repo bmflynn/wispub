@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -44,7 +43,7 @@ func newTLSConfig(ca string, insecure bool) (*tls.Config, error) {
 		panic(err)
 	}
 	if ca != "" {
-		certs, err := ioutil.ReadFile(ca)
+		certs, err := os.ReadFile(ca)
 		if err != nil {
 			return nil, fmt.Errorf("reading CA cert: %w", err)
 		}

@@ -102,10 +102,10 @@ func init() {
 	flags.StringVarP(&topic, "topic", "t", "", "Topic to publish the message to")
 	flags.BoolVar(&insecure, "insecure", false, "If using TLS, don't verify the remote server certificate")
 
-	cobra.MarkFlagRequired(flags, "broker")
-	cobra.MarkFlagRequired(flags, "download-url")
-	cobra.MarkFlagRequired(flags, "topic")
-	cobra.MarkFlagRequired(flags, "input")
+	cobra.CheckErr(cobra.MarkFlagRequired(flags, "broker"))
+	cobra.CheckErr(cobra.MarkFlagRequired(flags, "download-url"))
+	cobra.CheckErr(cobra.MarkFlagRequired(flags, "topic"))
+	cobra.CheckErr(cobra.MarkFlagRequired(flags, "input"))
 }
 
 func main() {
