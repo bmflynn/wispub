@@ -109,7 +109,10 @@ func init() {
 }
 
 func main() {
-	Cmd.Execute()
+  if err := Cmd.Execute(); err != nil {
+    fmt.Fprintf(os.Stderr, "%s\n", err)
+    os.Exit(1)
+  }
 }
 
 func exitHandlerContext() context.Context {
