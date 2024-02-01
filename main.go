@@ -36,7 +36,7 @@ var Cmd = &cobra.Command{
 	Long: `Tool for publishing product messages to a WIS 2.0 MQTT broker.
 
 See: https://community.wmo.int/activity-areas/wis/wis2-implementation
-Project: https://gitlab.ssec.wisc.edu/dbrtn/wispub
+Project: https://github.com/bmflynn/wispub
 `,
 	Example: `
 export WISPUB_BROKER_USER=<username>
