@@ -59,10 +59,10 @@ func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
 	}
 
 	return &MsgV04{
-		ID:       genMessageID(),
-		Version:  "v04",
-		Type:     "Feature",
-		Geometry: nil,
+		ID:         genMessageID(),
+		ConformsTo: []string{"http://wis.wmo.int/spec/wnm/1/conf/core"},
+		Type:       "Feature",
+		Geometry:   nil,
 		Properties: MsgV04Properties{
 			DataID:    dataID,
 			PubTime:   time.Now().Format("20060102T150405.000000000Z"),
@@ -95,7 +95,7 @@ type MsgV04Properties struct {
 
 type MsgV04 struct {
 	ID         string           `json:"id"`
-	Version    string           `json:"version"`
+	ConformsTo []string         `json:"conformsTo"`
 	Type       string           `json:"type"`
 	Geometry   interface{}      `json:"geometry"`
 	Properties MsgV04Properties `json:"properties"`
