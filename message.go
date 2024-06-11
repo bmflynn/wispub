@@ -65,7 +65,7 @@ func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
 		Geometry:   nil,
 		Properties: MsgV04Properties{
 			DataID:    dataID,
-			PubTime:   time.Now().Format("20060102T150405.000000000Z"),
+			PubTime:   time.Now().Format("2006-01-02T15:04:05.000000000Z"),
 			Integrity: *csum,
 			Size:      fi.Size(),
 		},
