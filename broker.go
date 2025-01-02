@@ -27,10 +27,10 @@ const (
 func getEnvCredentials() (string, string, error) {
 	pfx := "WISPUB_BROKER"
 	if _, ok := os.LookupEnv(pfx + "_USER"); !ok {
-		return "", "", fmt.Errorf(pfx + "_USER not set")
+		return "", "", fmt.Errorf("%v_USER not set", pfx)
 	}
 	if _, ok := os.LookupEnv(pfx + "_PASSWD"); !ok {
-		return "", "", fmt.Errorf(pfx + "_PASSWD is not set")
+		return "", "", fmt.Errorf("%v_PASSWD is not set", pfx)
 	}
 	return os.Getenv(pfx + "_USER"), os.Getenv(pfx + "_PASSWD"), nil
 }

@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func testMimeType(t *testing.T) {
+func TestMimeType(t *testing.T) {
 	cases := []struct {
 		path     string
 		expected string

@@ -17,9 +17,13 @@ import (
 
 func init() {
 	// Added to IANA July, 2024
-	mime.AddExtensionType(".bufr", "application/bufr")
+	if err := mime.AddExtensionType(".bufr", "application/bufr"); err != nil {
+		panic(err)
+	}
 	// Added to IANA July, 2024
-	mime.AddExtensionType(".grib", "application/grib")
+	if err := mime.AddExtensionType(".grib", "application/grib"); err != nil {
+		panic(err)
+	}
 }
 
 func checksum(f *os.File) (*Integrity, error) {
