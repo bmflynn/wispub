@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-export VER=`git describe --dirty`
+export VER=$(cat version.txt)
 if [[ $VER == "" ]]; then
     VER="<notset>"
 fi
