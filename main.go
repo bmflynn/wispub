@@ -25,6 +25,7 @@ var (
 	center      string
 	satellite   string
 	observation string
+	mimeType    string
 	verbose     bool
 	insecure    bool
 	dryrun      bool
@@ -101,6 +102,7 @@ func init() {
 	flags.StringVarP(&download, "download-url", "u", "", "Publicly available URL where the data can be downloaded")
 	flags.StringVarP(&topic, "topic", "t", "", "Topic to publish the message to")
 	flags.BoolVar(&insecure, "insecure", false, "If using TLS, don't verify the remote server certificate")
+	flags.StringVarP(&mimeType, "mime-type", "m", "", "Mime-type for the provided input. If not provided it will be determined by file extension.")
 
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "broker"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "download-url"))
@@ -109,6 +111,7 @@ func init() {
 }
 
 func main() {
+
 	if err := Cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
@@ -131,7 +134,7 @@ func run(ctx context.Context, brokerURL, downloadURL *url.URL) {
 		log.Printf("connecting to %+s", brokerURL)
 	}
 
-	wisMsg, err := newMessage(input, topic, downloadURL)
+	wisMsg, err := newMessage(input, topic, downloadURL, mimeType)
 	if err != nil {
 		log.Fatalf("failed to construct message from input: %s", err)
 	}

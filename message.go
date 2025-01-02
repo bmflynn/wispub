@@ -65,7 +65,7 @@ func mimeTypeByExtension(name string) string {
 	return typ
 }
 
-func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
+func newMessage(fpath, topic string, downloadURL *url.URL, mimeType string) (*MsgV04, error) {
 	f, err := os.Open(fpath)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,10 @@ func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
 		return nil, fmt.Errorf("unable to construct data id: %w", err)
 	}
 
-	typ := mimeTypeByExtension(fpath)
+	typ := mimeType
+	if typ == "" {
+		typ = mimeTypeByExtension(fpath)
+	}
 
 	return &MsgV04{
 		ID:         genMessageID(),
