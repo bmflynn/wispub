@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"mime"
 	"net/url"
 	"os"
 	"path"
@@ -13,6 +14,13 @@ import (
 
 	"github.com/google/uuid"
 )
+
+func init() {
+	// Added to IANA July, 2024
+	mime.AddExtensionType(".bufr", "application/bufr")
+	// Added to IANA July, 2024
+	mime.AddExtensionType(".grib", "application/grib")
+}
 
 func checksum(f *os.File) (*Integrity, error) {
 	h := sha512.New()
@@ -27,6 +35,7 @@ func checksum(f *os.File) (*Integrity, error) {
 }
 
 func genMessageID() string { return uuid.New().String() }
+
 func getDataID(topic, filename string) (string, error) {
 	parts := strings.Split(topic, "/")
 	if len(parts) < 3 {
@@ -35,6 +44,21 @@ func getDataID(topic, filename string) (string, error) {
 	parts = parts[2:]
 	parts = append(parts, filename)
 	return path.Join(parts...), nil
+}
+
+// Get mime type from file name
+// See additional types registered in init
+func mimeTypeByExtension(name string) string {
+	ext := path.Ext(name)
+	if ext == "" {
+		return "application/octet-stream"
+	}
+	typ := mime.TypeByExtension(ext)
+	// unknown mimetype
+	if typ == "" {
+		return "application/octet-stream"
+	}
+	return typ
 }
 
 func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
@@ -58,6 +82,8 @@ func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
 		return nil, fmt.Errorf("unable to construct data id: %w", err)
 	}
 
+	typ := mimeTypeByExtension(fpath)
+
 	return &MsgV04{
 		ID:         genMessageID(),
 		ConformsTo: []string{"http://wis.wmo.int/spec/wnm/1/conf/core"},
@@ -70,7 +96,7 @@ func newMessage(fpath, topic string, downloadURL *url.URL) (*MsgV04, error) {
 			Size:      fi.Size(),
 		},
 		Links: []Link{
-			{Href: downloadURL.String(), Rel: "canonical", Type: "application/octet-stream"},
+			{Href: downloadURL.String(), Rel: "canonical", Type: typ},
 		},
 	}, nil
 }
