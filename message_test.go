@@ -8,7 +8,9 @@ func TestMimeType(t *testing.T) {
 		expected string
 	}{
 		{"foo.bufr", "application/bufr"},
+		{"foo.bufr.bin", "application/bufr"},
 		{"foo.grib", "application/grib"},
+		{"foo.grib.bin", "application/grib"},
 		{"foo", "applicaiton/octet-stream"},
 	}
 	for _, test := range cases {

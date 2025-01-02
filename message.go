@@ -17,12 +17,15 @@ import (
 
 func init() {
 	// Added to IANA July, 2024
-	if err := mime.AddExtensionType(".bufr", "application/bufr"); err != nil {
-		panic(err)
-	}
-	// Added to IANA July, 2024
-	if err := mime.AddExtensionType(".grib", "application/grib"); err != nil {
-		panic(err)
+	for typ, exts := range map[string][]string{
+		"application/bufr": {".bufr", ".bufr.bin"},
+		"application/grib": {".grib", ".grib.bin"},
+	} {
+		for _, ext := range exts {
+			if err := mime.AddExtensionType(ext, typ); err != nil {
+				panic(err)
+			}
+		}
 	}
 }
 
@@ -55,11 +58,12 @@ func getDataID(topic, filename string) (string, error) {
 func mimeTypeByExtension(name string) string {
 	ext := path.Ext(name)
 	if ext == "" {
+		// no extension
 		return "application/octet-stream"
 	}
 	typ := mime.TypeByExtension(ext)
-	// unknown mimetype
 	if typ == "" {
+		// unknown mimetype
 		return "application/octet-stream"
 	}
 	return typ
