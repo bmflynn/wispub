@@ -11,7 +11,7 @@ func TestMimeType(t *testing.T) {
 		{"foo.bufr.bin", "application/bufr"},
 		{"foo.grib", "application/grib"},
 		{"foo.grib.bin", "application/grib"},
-		{"foo", "applicaiton/octet-stream"},
+		{"foo", "application/octet-stream"},
 	}
 	for _, test := range cases {
 		if typ := mimeTypeByExtension(test.path); typ != test.expected {

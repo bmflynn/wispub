@@ -16,7 +16,6 @@ import (
 )
 
 func init() {
-	// Added to IANA July, 2024
 	for typ, exts := range map[string][]string{
 		"application/bufr": {".bufr", ".bufr.bin"},
 		"application/grib": {".grib", ".grib.bin"},
@@ -56,6 +55,12 @@ func getDataID(topic, filename string) (string, error) {
 // Get mime type from file name
 // See additional types registered in init
 func mimeTypeByExtension(name string) string {
+	switch {
+	case strings.HasSuffix(name, ".bufr.bin"):
+		name = strings.Replace(name, ".bufr.bin", ".bufr", 1)
+	case strings.HasSuffix(name, ".grib.bin"):
+		name = strings.Replace(name, ".grib.bin", ".grib", 1)
+	}
 	ext := path.Ext(name)
 	if ext == "" {
 		// no extension
