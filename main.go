@@ -20,6 +20,7 @@ var version = "<notset>"
 var (
 	broker      string
 	input       string
+	dataDomain  string
 	download    string
 	topic       string
 	center      string
@@ -103,6 +104,7 @@ func init() {
 	flags.StringVarP(&topic, "topic", "t", "", "Topic to publish the message to")
 	flags.BoolVar(&insecure, "insecure", false, "If using TLS, don't verify the remote server certificate")
 	flags.StringVarP(&mimeType, "mime-type", "m", "", "Mime-type for the provided input. If not provided it will be determined by file extension.")
+	flags.StringVarP(&dataDomain, "data-domain", "d", "DBNet", "Data domain indicator to add to the message properties.dataDomain")
 
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "broker"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "download-url"))
@@ -111,7 +113,6 @@ func init() {
 }
 
 func main() {
-
 	if err := Cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
@@ -139,7 +140,11 @@ func run(ctx context.Context, brokerURL, downloadURL *url.URL) {
 		log.Fatalf("failed to construct message from input: %s", err)
 	}
 
-	body, err := encode(wisMsg)
+	var properties map[string]any
+	if dataDomain != "" {
+		properties = map[string]any{"dataDomain": dataDomain}
+	}
+	body, err := encodeWithAdditionalProperties(wisMsg, properties)
 	if err != nil {
 		log.Fatalf("failed to encode message as json: %s", err)
 	}

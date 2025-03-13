@@ -139,7 +139,7 @@ type MsgV04 struct {
 	ID         string           `json:"id"`
 	ConformsTo []string         `json:"conformsTo"`
 	Type       string           `json:"type"`
-	Geometry   interface{}      `json:"geometry"`
+	Geometry   any              `json:"geometry"`
 	Properties MsgV04Properties `json:"properties"`
 	Links      []Link           `json:"links"`
 }
