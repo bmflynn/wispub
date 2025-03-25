@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/eclipse/paho.golang/paho"
 	"github.com/spf13/cobra"
@@ -21,6 +22,7 @@ var (
 	broker      string
 	input       string
 	dataDomain  string
+	datetimeVal string
 	download    string
 	topic       string
 	center      string
@@ -105,11 +107,15 @@ func init() {
 	flags.BoolVar(&insecure, "insecure", false, "If using TLS, don't verify the remote server certificate")
 	flags.StringVarP(&mimeType, "mime-type", "m", "", "Mime-type for the provided input. If not provided it will be determined by file extension.")
 	flags.StringVarP(&dataDomain, "data-domain", "d", "DBNet", "Data domain indicator to add to the message properties.dataDomain")
+	flags.StringVarP(&datetimeVal, "datetime", "D", "",
+		"Time and date of the data as either a single timestamp or as a comma separated start and end. The format for "+
+			"the timestamp(s) is RFC3339, e.g., <yyyy-mm-dd>T<hh:mm:ss>Z")
 
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "broker"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "download-url"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "topic"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "input"))
+	cobra.CheckErr(cobra.MarkFlagRequired(flags, "datetime"))
 }
 
 func main() {
@@ -130,12 +136,39 @@ func exitHandlerContext() context.Context {
 	return ctx
 }
 
+func parseDatetime() (string, string, error) {
+	layout := "2006-01-02T15:04:05Z"
+	start, end, found := strings.Cut(datetimeVal, ",")
+	if found {
+		startT, err := time.Parse(time.RFC3339, start)
+		if err != nil {
+			return "", "", fmt.Errorf("invalid datetime start value: %s", start)
+		}
+		endT, err := time.Parse(time.RFC3339, end)
+		if err != nil {
+			return "", "", fmt.Errorf("invalid datetime end value: %s", end)
+		}
+		return startT.Format(layout), endT.Format(layout), nil
+	}
+	t, err := time.Parse(time.RFC3339, datetimeVal)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid datetime value: %s", datetimeVal)
+	}
+	// Mon Jan 2 15:04:05 MST 2006
+	return t.Format("2006-01-02T15:04:05Z"), "", nil
+}
+
 func run(ctx context.Context, brokerURL, downloadURL *url.URL) {
 	if verbose {
 		log.Printf("connecting to %+s", brokerURL)
 	}
 
-	wisMsg, err := newMessage(input, topic, downloadURL, mimeType)
+	start, end, err := parseDatetime()
+	if err != nil {
+		log.Fatalf("failed to parse timestamps: %s", err)
+	}
+
+	wisMsg, err := newMessage(input, topic, downloadURL, mimeType, start, end)
 	if err != nil {
 		log.Fatalf("failed to construct message from input: %s", err)
 	}
@@ -150,7 +183,7 @@ func run(ctx context.Context, brokerURL, downloadURL *url.URL) {
 	}
 
 	if dryrun {
-		os.Stdout.WriteString(topic + "\n")
+		os.Stderr.WriteString(topic + "\n")
 		os.Stdout.Write(body)
 		os.Stdout.WriteString("\n")
 		return

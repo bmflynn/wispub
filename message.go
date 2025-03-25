@@ -74,7 +74,7 @@ func mimeTypeByExtension(name string) string {
 	return typ
 }
 
-func newMessage(fpath, topic string, downloadURL *url.URL, mimeType string) (*MsgV04, error) {
+func newMessage(fpath, topic string, downloadURL *url.URL, mimeType, start, end string) (*MsgV04, error) {
 	f, err := os.Open(fpath)
 	if err != nil {
 		return nil, err
@@ -100,17 +100,26 @@ func newMessage(fpath, topic string, downloadURL *url.URL, mimeType string) (*Ms
 		typ = mimeTypeByExtension(fpath)
 	}
 
+	props := MsgV04Properties{
+		DataID:    dataID,
+		PubTime:   time.Now().Format("2006-01-02T15:04:05.000000000Z"),
+		Integrity: *csum,
+		Size:      fi.Size(),
+	}
+
+	if start != "" && end == "" {
+		props.Datetime = start
+	} else if start != "" && end != "" {
+		props.StartDatetime = start
+		props.EndDatetime = end
+	}
+
 	return &MsgV04{
 		ID:         genMessageID(),
 		ConformsTo: []string{"http://wis.wmo.int/spec/wnm/1/conf/core"},
 		Type:       "Feature",
 		Geometry:   nil,
-		Properties: MsgV04Properties{
-			DataID:    dataID,
-			PubTime:   time.Now().Format("2006-01-02T15:04:05.000000000Z"),
-			Integrity: *csum,
-			Size:      fi.Size(),
-		},
+		Properties: props,
 		Links: []Link{
 			{Href: downloadURL.String(), Rel: "canonical", Type: typ},
 		},
@@ -129,10 +138,13 @@ type Link struct {
 }
 
 type MsgV04Properties struct {
-	DataID    string    `json:"data_id"`
-	PubTime   string    `json:"pubtime"`
-	Integrity Integrity `json:"integrity"`
-	Size      int64     `json:"size"`
+	DataID        string    `json:"data_id"`
+	PubTime       string    `json:"pubtime"`
+	Integrity     Integrity `json:"integrity"`
+	Size          int64     `json:"size"`
+	Datetime      string    `json:"datetime,omitempty"`
+	StartDatetime string    `json:"start_datetime,omitempty"`
+	EndDatetime   string    `json:"end_datetime,omitempty"`
 }
 
 type MsgV04 struct {
