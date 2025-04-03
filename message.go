@@ -104,7 +104,6 @@ func newMessage(fpath, topic string, downloadURL *url.URL, mimeType, start, end 
 		DataID:    dataID,
 		PubTime:   time.Now().Format("2006-01-02T15:04:05.000000000Z"),
 		Integrity: *csum,
-		Size:      fi.Size(),
 	}
 
 	if start != "" && end == "" {
@@ -121,7 +120,7 @@ func newMessage(fpath, topic string, downloadURL *url.URL, mimeType, start, end 
 		Geometry:   nil,
 		Properties: props,
 		Links: []Link{
-			{Href: downloadURL.String(), Rel: "canonical", Type: typ},
+			{Href: downloadURL.String(), Rel: "canonical", Type: typ, Length: fi.Size()},
 		},
 	}, nil
 }
@@ -132,16 +131,16 @@ type Integrity struct {
 }
 
 type Link struct {
-	Href string `json:"href"`
-	Rel  string `json:"rel"`
-	Type string `json:"type"`
+	Href   string `json:"href"`
+	Rel    string `json:"rel"`
+	Type   string `json:"type"`
+	Length int64  `json:"length"`
 }
 
 type MsgV04Properties struct {
 	DataID        string    `json:"data_id"`
 	PubTime       string    `json:"pubtime"`
 	Integrity     Integrity `json:"integrity"`
-	Size          int64     `json:"size"`
 	Datetime      string    `json:"datetime,omitempty"`
 	StartDatetime string    `json:"start_datetime,omitempty"`
 	EndDatetime   string    `json:"end_datetime,omitempty"`

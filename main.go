@@ -50,7 +50,8 @@ wispub \
 	--broker=ssl://<broker host> \
 	--topic=<message topic> \
 	--download-url=<product download url> \
-	--input=<product file>
+	--input=<product file> \
+	--datetime=<yyyy-mm-dd>T<hh:mm:ss>Z,<yyyy-mm-dd>T<hh:mm:ss>Z
 
 Add the --dryrun flag to print out message information without sending.
 
@@ -115,7 +116,6 @@ func init() {
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "download-url"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "topic"))
 	cobra.CheckErr(cobra.MarkFlagRequired(flags, "input"))
-	cobra.CheckErr(cobra.MarkFlagRequired(flags, "datetime"))
 }
 
 func main() {
@@ -137,6 +137,10 @@ func exitHandlerContext() context.Context {
 }
 
 func parseDatetime() (string, string, error) {
+	// Not an error to not provided datetime
+	if datetimeVal == "" {
+		return "", "", nil
+	}
 	layout := "2006-01-02T15:04:05Z"
 	start, end, found := strings.Cut(datetimeVal, ",")
 	if found {
