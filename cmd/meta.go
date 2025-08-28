@@ -101,7 +101,7 @@ func init() {
 	flags.StringP("input", "i", "",
 		"Path to a JSON file containing a WMO Core Metadata Profile (Version 2) document.")
 	flags.StringP("center", "c", "", "WMO center identifier used to generate the message topic")
-	flags.StringP("topic", "t", "origin/a/wis2/{{.Center}}/metadata",
+	flags.StringP("topic", "t", "origin/a/wis2/{{.Center}}/metadata/core/wcmp2",
 		"Topic (template) to use for the message. This is not normally necessary")
 	flags.Bool("insecure", false, "If using TLS, don't verify the remote server certificate")
 
