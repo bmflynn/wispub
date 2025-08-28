@@ -16,8 +16,9 @@ import (
 )
 
 var metaCmd = &cobra.Command{
-	Use:   "meta",
-	Short: "Publish a metadata notification message",
+	Use:     "metadata",
+	Aliases: []string{"meta", "m"},
+	Short:   "Publish a metadata notification message",
 	Long: `Publish a metadata notification message to a WIS 2.0 MQTT broker.
 
 A metadata notification is required for to register a new data stream.
@@ -60,22 +61,15 @@ More information on topic hierarchy is available here:
 			return fmt.Errorf("invalid topic template: %w", err)
 		}
 
-		satellite, err := flags.GetString("satellite")
-		cobra.CheckErr(err)
-
-		observation, err := flags.GetString("observation")
-		cobra.CheckErr(err)
-
 		center, err := flags.GetString("center")
 		cobra.CheckErr(err)
 
-		skipValidation, err := flags.GetBool("skip-validation")
 		cobra.CheckErr(err)
 
 		buf := &bytes.Buffer{}
 		err = topicTmpl.Execute(buf, struct {
-			Satellite, Observation, Center string
-		}{satellite, observation, center})
+			Center string
+		}{center})
 		if err != nil {
 			return fmt.Errorf("could not render topic template")
 		}
@@ -91,7 +85,7 @@ More information on topic hierarchy is available here:
 
 		ctx := exitHandlerContext()
 
-		doMetaCmd(ctx, brokerURL, input, topic, center, verbose, dryrun, insecure, skipValidation)
+		doMetaCmd(ctx, brokerURL, input, topic, center, verbose, dryrun, insecure)
 		return nil
 	},
 }
@@ -100,14 +94,12 @@ func init() {
 	flags := metaCmd.Flags()
 	flags.Bool("verbose", false, "Verbose logging")
 	flags.Bool("dryrun", false, "Generate and print the message and topic, but don't send")
-	flags.Bool("skip-validation", false, "Do not perform schema validation on the input file")
 
 	flags.String("broker", "",
 		"MQTT broker URL to publish messages to. Can be tcp:// or ssl://. If the port is not included it "+
 			"will default to "+fmt.Sprintf("%v for tcp and %v for ssl.", defaultPort, defaultSSLPort))
 	flags.StringP("input", "i", "",
-		"Path to a JSON file containing a WMO Core Metadata Profile (Version 2) document. "+
-			"The document will be validated against the schema before sending, unless --skip-validation is used.")
+		"Path to a JSON file containing a WMO Core Metadata Profile (Version 2) document.")
 	flags.StringP("center", "c", "", "WMO center identifier used to generate the message topic")
 	flags.StringP("topic", "t", "origin/a/wis2/{{.Center}}/metadata",
 		"Topic (template) to use for the message. This is not normally necessary")
@@ -124,7 +116,7 @@ func doMetaCmd(
 	ctx context.Context,
 	brokerURL *url.URL,
 	input, topic, center string,
-	verbose, dryrun, insecure, skipValidation bool,
+	verbose, dryrun, insecure bool,
 ) {
 	if verbose {
 		log.Printf("connecting to %+s", brokerURL)
@@ -133,12 +125,6 @@ func doMetaCmd(
 	body, err := os.ReadFile(input)
 	if err != nil {
 		log.Fatalf("failed to read input file: %s", err)
-	}
-
-	if !skipValidation {
-		if err := internal.ValidateMetadataMessage(body); err != nil {
-			log.Fatalf("input failed to validate against schema: %s", err)
-		}
 	}
 
 	if err != nil {

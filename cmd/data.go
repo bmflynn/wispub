@@ -16,8 +16,9 @@ import (
 )
 
 var dataCmd = &cobra.Command{
-	Use:   "data",
-	Short: "Publish a data notification message",
+	Use:     "data",
+	Aliases: []string{"d", "dat"},
+	Short:   "Publish a data notification message",
 	Long: `Publish a data notification message to a WIS 2.0 MQTT broker.
 
 A data notification message can be sent to notify subscribers of the availability 

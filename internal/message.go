@@ -4,7 +4,6 @@ import (
 	"crypto/sha512"
 	_ "embed"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
 	"mime"
@@ -15,7 +14,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	jsonschema "github.com/santhosh-tekuri/jsonschema/v5"
 )
 
 func init() {
@@ -158,23 +156,4 @@ type NotificationMsgV04 struct {
 	Geometry   any                          `json:"geometry"`
 	Properties NotificationMsgV04Properties `json:"properties"`
 	Links      []Link                       `json:"links"`
-}
-
-//go:embed schema/wcmp2-bundled.json
-var metadataSchema []byte
-
-func ValidateMetadataMessage(doc []byte) error {
-	sch, err := jsonschema.CompileString("wcmp2-bundled.json", string(doc))
-	if err != nil {
-		return fmt.Errorf("Metadata schema is not valid: %w", err)
-	}
-	var v any
-	if err := json.Unmarshal(doc, &v); err != nil {
-		return fmt.Errorf("failed to unmarshal metadata message: %w", err)
-	}
-
-	if err = sch.Validate(v); err != nil {
-		return fmt.Errorf("invalid metadata document: %w", err)
-	}
-	return nil
 }
