@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/eclipse/paho.golang v0.10.0
 	github.com/google/uuid v1.3.0
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/stretchr/testify v1.7.0
 )
 

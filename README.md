@@ -4,7 +4,8 @@
 
 * WMO Wis2 [Site](https://community.wmo.int/en/activity-areas/wis/wis2-implementation)
 * [Message Topics](https://github.com/wmo-im/wis2-topic-hierarchy)
-* [Message Format](https://github.com/wmo-im/wis2-notification-message)
+* [Notification Message Format](https://github.com/wmo-im/wis2-notification-message)
+* [Metadata Profile Format](https://wmo-im.github.io/wcmp2/standard/wcmp2-STABLE.html)
 * [Message Schema](https://schemas.wmo.int/wnm/1.0.0/schemas/wis2-notification-message-bundled.json)
 
 ## License

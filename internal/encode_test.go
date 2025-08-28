@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"strings"
@@ -8,12 +8,12 @@ import (
 )
 
 func Test_encodeWithAdditionalProperties(t *testing.T) {
-	msg := &MsgV04{
+	msg := &NotificationMsgV04{
 		ID:         "ID",
 		ConformsTo: []string{},
 		Type:       "TYPE",
 		Geometry:   nil,
-		Properties: MsgV04Properties{
+		Properties: NotificationMsgV04Properties{
 			DataID:  "DATAID",
 			PubTime: "PUBTIME",
 			Integrity: Integrity{
@@ -26,7 +26,7 @@ func Test_encodeWithAdditionalProperties(t *testing.T) {
 		},
 	}
 
-	dat, err := encodeWithAdditionalProperties(msg, map[string]any{
+	dat, err := EncodeMessage(msg, map[string]any{
 		"myNewProperty":     true,
 		"myOtherProperty":   0,
 		"myAnotherProperty": "XXX",
@@ -62,12 +62,12 @@ func Test_encodeWithAdditionalProperties(t *testing.T) {
 }
 
 func Test_encodeDatetimes(t *testing.T) {
-	msg := &MsgV04{
+	msg := &NotificationMsgV04{
 		ID:         "ID",
 		ConformsTo: []string{},
 		Type:       "TYPE",
 		Geometry:   nil,
-		Properties: MsgV04Properties{
+		Properties: NotificationMsgV04Properties{
 			DataID:  "DATAID",
 			PubTime: "PUBTIME",
 			Integrity: Integrity{
@@ -82,14 +82,14 @@ func Test_encodeDatetimes(t *testing.T) {
 
 	t.Run("with", func(t *testing.T) {
 		msg.Properties.Datetime = "xxx"
-		dat, err := encodeWithAdditionalProperties(msg, nil)
+		dat, err := EncodeMessage(msg, nil)
 		require.NoError(t, err)
 
 		require.Contains(t, string(dat), "datetime")
 	})
 	t.Run("without", func(t *testing.T) {
 		msg.Properties.Datetime = ""
-		dat, err := encodeWithAdditionalProperties(msg, nil)
+		dat, err := EncodeMessage(msg, nil)
 		require.NoError(t, err)
 
 		require.NotContains(t, string(dat), "datetime")

@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"context"
@@ -17,11 +17,6 @@ const (
 	QosAtMostOnce  byte = 0
 	QosAtLeastOnce byte = 1
 	QosExactlyOnce byte = 2
-)
-
-const (
-	defaultSSLPort = 8883
-	defaultPort    = 1883
 )
 
 func getEnvCredentials() (string, string, error) {
@@ -56,19 +51,6 @@ func newTLSConfig(ca string, insecure bool) (*tls.Config, error) {
 	return cfg, nil
 }
 
-func setDefaultPort(u *url.URL) {
-	switch u.Scheme {
-	case "ssl":
-		if u.Port() == "" {
-			u.Host = fmt.Sprintf("%s:%v", u.Host, defaultSSLPort)
-		}
-	case "tcp":
-		if u.Port() == "" {
-			u.Host = fmt.Sprintf("%s:%v", u.Host, defaultPort)
-		}
-	}
-}
-
 func newConn(u *url.URL, tlsCA string, insecure bool) (net.Conn, error) {
 	switch u.Scheme {
 	case "ssl":
@@ -84,7 +66,7 @@ func newConn(u *url.URL, tlsCA string, insecure bool) (net.Conn, error) {
 }
 
 // NewClient returns a new connected client
-func newClient(ctx context.Context, broker *url.URL, clientID, tlsCA string, insecure bool) (*paho.Client, error) {
+func NewClient(ctx context.Context, broker *url.URL, clientID, tlsCA string, insecure bool) (*paho.Client, error) {
 	conn, err := newConn(broker, tlsCA, insecure)
 	if err != nil {
 		return nil, fmt.Errorf("setting up connection: %w", err)
@@ -119,7 +101,7 @@ func newClient(ctx context.Context, broker *url.URL, clientID, tlsCA string, ins
 	return client, nil
 }
 
-func pubReason(code byte) string {
+func PubReason(code byte) string {
 	switch code {
 	case 0:
 		return "success"

@@ -1,16 +1,16 @@
-package main
+package internal
 
 import (
 	"encoding/json"
 	"fmt"
 )
 
-func encode(msg *MsgV04) ([]byte, error) {
+func Encode(msg any) ([]byte, error) {
 	return json.MarshalIndent(msg, "", "  ")
 }
 
-func encodeWithAdditionalProperties(msg *MsgV04, properties map[string]any) ([]byte, error) {
-	dat, err := encode(msg)
+func EncodeMessage(msg any, properties map[string]any) ([]byte, error) {
+	dat, err := Encode(msg)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,10 @@
-package main
+package internal
 
 import (
 	"crypto/sha512"
+	_ "embed"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime"
@@ -13,6 +15,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	jsonschema "github.com/santhosh-tekuri/jsonschema/v5"
 )
 
 func init() {
@@ -74,7 +77,7 @@ func mimeTypeByExtension(name string) string {
 	return typ
 }
 
-func newMessage(fpath, topic string, downloadURL *url.URL, mimeType, start, end string) (*MsgV04, error) {
+func NewNotificationMessage(fpath, topic string, downloadURL *url.URL, mimeType, metaId, start, end string) (*NotificationMsgV04, error) {
 	f, err := os.Open(fpath)
 	if err != nil {
 		return nil, err
@@ -100,8 +103,9 @@ func newMessage(fpath, topic string, downloadURL *url.URL, mimeType, start, end 
 		typ = mimeTypeByExtension(fpath)
 	}
 
-	props := MsgV04Properties{
+	props := NotificationMsgV04Properties{
 		DataID:    dataID,
+		MetaId:    metaId,
 		PubTime:   time.Now().Format("2006-01-02T15:04:05.000000000Z"),
 		Integrity: *csum,
 	}
@@ -113,7 +117,7 @@ func newMessage(fpath, topic string, downloadURL *url.URL, mimeType, start, end 
 		props.EndDatetime = end
 	}
 
-	return &MsgV04{
+	return &NotificationMsgV04{
 		ID:         genMessageID(),
 		ConformsTo: []string{"http://wis.wmo.int/spec/wnm/1/conf/core"},
 		Type:       "Feature",
@@ -137,20 +141,40 @@ type Link struct {
 	Length int64  `json:"length"`
 }
 
-type MsgV04Properties struct {
+type NotificationMsgV04Properties struct {
 	DataID        string    `json:"data_id"`
 	PubTime       string    `json:"pubtime"`
 	Integrity     Integrity `json:"integrity"`
+	MetaId        string    `json:"metadata_id,omitempty"`
 	Datetime      string    `json:"datetime,omitempty"`
 	StartDatetime string    `json:"start_datetime,omitempty"`
 	EndDatetime   string    `json:"end_datetime,omitempty"`
 }
 
-type MsgV04 struct {
-	ID         string           `json:"id"`
-	ConformsTo []string         `json:"conformsTo"`
-	Type       string           `json:"type"`
-	Geometry   any              `json:"geometry"`
-	Properties MsgV04Properties `json:"properties"`
-	Links      []Link           `json:"links"`
+type NotificationMsgV04 struct {
+	ID         string                       `json:"id"`
+	ConformsTo []string                     `json:"conformsTo"`
+	Type       string                       `json:"type"`
+	Geometry   any                          `json:"geometry"`
+	Properties NotificationMsgV04Properties `json:"properties"`
+	Links      []Link                       `json:"links"`
+}
+
+//go:embed schema/wcmp2-bundled.json
+var metadataSchema []byte
+
+func ValidateMetadataMessage(doc []byte) error {
+	sch, err := jsonschema.CompileString("wcmp2-bundled.json", string(doc))
+	if err != nil {
+		return fmt.Errorf("Metadata schema is not valid: %w", err)
+	}
+	var v any
+	if err := json.Unmarshal(doc, &v); err != nil {
+		return fmt.Errorf("failed to unmarshal metadata message: %w", err)
+	}
+
+	if err = sch.Validate(v); err != nil {
+		return fmt.Errorf("invalid metadata document: %w", err)
+	}
+	return nil
 }
